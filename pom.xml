@@ -4,14 +4,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.why.tools</groupId>
+    <groupId>com.hanyuking</groupId>
     <artifactId>sonyflake</artifactId>
     <version>1.0.0-RELEASE</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <repository-owner>hanyuking</repository-owner>
+        <repository-name>sonyflake_artifact</repository-name>
+        <branch-name>master</branch-name>
     </properties>
+
+    <url>https://github.com/${repository-owner}/${repository-name}.git</url>
+    <scm>
+        <url>https://github.com/${repository-owner}/${repository-name}.git</url>
+        <connection>scm:git:git@github.com:${repository-owner}/${repository-name}.git</connection>
+        <developerConnection>scm:git:git@github.com:${repository-owner}/${repository-name}.git</developerConnection>
+    </scm>
+
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
@@ -36,26 +47,96 @@
 
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>internal.repo</id>
+            <name>Temporary Staging Repository</name>
+            <url>file://${project.build.directory}/mvn-artifact</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.21.0</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.12</version>
+                <configuration>
+                    <message>Maven artifacts for ${project.version}</message>
+                    <noJekyll>true</noJekyll>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <branch>refs/heads/${branch-name}</branch>
+                    <includes>
+                        <include>**/*</include>
+                    </includes>
+                    <merge>true</merge>
+                    <repositoryName>${repository-name}</repositoryName>
+                    <repositoryOwner>${repository-owner}</repositoryOwner>
+                    <server>github</server>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                    </execution>
+                </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>1.2.0</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>5.2.0</version>
+                        <groupId>org.eclipse.mylyn.github</groupId>
+                        <artifactId>org.eclipse.egit.github.core</artifactId>
+                        <version>2.1.4</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+                <configuration>
+                    <altDeploymentRepository>
+                        internal.repo::default::file://${project.build.directory}/mvn-artifact
+                    </altDeploymentRepository>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>PROJECT-REPO-URL</id>
+            <url>https://github.com/${repository-owner}/${repository-name}/${branch-name}</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>
